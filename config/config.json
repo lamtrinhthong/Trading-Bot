@@ -1,0 +1,10 @@
+{
+    "account": 12345678,
+    "password": "your_password",
+    "server": "your_server",
+    "symbol": "EURUSD",
+    "timeframe": "M1",
+    "lot_size": 0.1,
+    "short_window": 50,
+    "long_window": 200
+  }  
