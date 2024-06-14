@@ -1,10 +1,13 @@
 {
-    "account": 12345678,
-    "password": "your_password",
-    "server": "your_server",
-    "symbol": "EURUSD",
+    "account": 124880048,
+    "password": "Trinhthong0?",
+    "server": "Exness-MT5Trial7",
+    "symbol": "BTCUSDm",
     "timeframe": "M1",
-    "lot_size": 0.1,
-    "short_window": 50,
-    "long_window": 200
+    "number_of_candles" : 100,
+    "volume": 0.1,
+    "fsma_period": 20,
+    "ssma_period": 10,
+    "trend_D1": "Down",
+    "trend_H4": "Down"
   }  
