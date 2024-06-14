@@ -21,8 +21,7 @@ TREND_DOWN  = "downtrend"
 TREND_UP    = "uptrend"
 
 TREND_D1    = TREND_DOWN
-TREND_H4    = TREND_DOWN
-TREND_H1    = TREND_UP
+TREND_H4    = TREND_UP
 
 def main():
     # Set up logging
@@ -35,7 +34,7 @@ def main():
         config = json.load(config_file)
     
     service = Mt5Service(config['server'], config['account'], config['password'])
-    strategy = MovingAverage()
+    strategy = MovingAverage(TREND_H4)
 
     # Connect to the trading account
     service.connect()
@@ -50,16 +49,22 @@ def main():
         # Requesting historical data
         df = service.get_data(symbol, time_frame, number_of_candles)
 
+        # Calculate Moving Average
         df = strategy.calculate_moving_average(df, short_window)
 
-        counter_trend = strategy.get_counter_trend(df, TREND_H4)
-        max_counter_trend_price = counter_trend['high'].max() if not counter_trend.empty else None
+        # Define the counter trend
+        counter_trend = strategy.get_counter_trend(df)
 
-        print(df)
-        print("---------------------------------")
-        print(counter_trend)
-        print("---------------------------------")
-        print(max_counter_trend_price)
+        # Check the current state is in counter trend or not
+        is_in_counter_trend = strategy.is_current_counter_trend(df)
+
+        if not is_in_counter_trend:
+            print("Not in counter trend, keep waiting!")
+            time.sleep(30)
+            continue
+            
+        print("In counter trend, waiting for finishing the counter trend!")
+        sl = strategy.get_sl(counter_trend)
         
         # Wait before the next iteration
         time.sleep(30)

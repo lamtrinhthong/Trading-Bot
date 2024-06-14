@@ -97,7 +97,7 @@ class Mt5Service:
         # Requesting historical data
         bars = mt5.copy_rates_range(symbol, timeframe, date_from, date_to)
         df = pd.DataFrame(bars)[['time', 'open', 'high', 'low', 'close']]
-        df['time'] = pd.to_datetime(df['time'], unit='s')
+        df['time'] = pd.to_datetime(df['time'], utc=True, unit='s').dt.tz_convert('Asia/Bangkok')
 
         return df
     
