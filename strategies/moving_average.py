@@ -2,8 +2,8 @@ import pandas as pd
 
 class MovingAverage:
 
-    def __init__(self, trend_H4):
-        self.trend_H4 = trend_H4
+    def __init__(self, parent_trend):
+        self.parent_trend = parent_trend
 
     def calculate_moving_average(self, df, period):
         df['ma'] = df['close'].rolling(window=period, min_periods=1).mean()
@@ -12,10 +12,10 @@ class MovingAverage:
     
     def get_counter_trend(self, df):
         # Define counter trend logic
-        if self.trend_H4 == 'uptrend':
+        if self.parent_trend == 'uptrend':
             # Counter trend: price crosses below the short moving average
             df['counter_trend'] = df['close'] < df['ma']
-        elif self.trend_H4 == 'downtrend':
+        elif self.parent_trend == 'downtrend':
             # Counter trend: price crosses above the short moving average
             df['counter_trend'] = df['close'] > df['ma']
         else:
@@ -43,7 +43,7 @@ class MovingAverage:
         return is_in_counter_trend
     
     def get_sl(self, df_counter_trend):
-        if self.trend_H4 == 'uptrend':
-            return df_counter_trend['low'].min() if not df_counter_trend.empty else None
-        elif self.trend_H4 == 'downtrend':
-            return df_counter_trend['high'].max() if not df_counter_trend.empty else None
+        if self.parent_trend == 'uptrend':
+            return df_counter_trend['low'].min() - 1 if not df_counter_trend.empty else None
+        elif self.parent_trend == 'downtrend':
+            return df_counter_trend['high'].max() + 1 if not df_counter_trend.empty else None

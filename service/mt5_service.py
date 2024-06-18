@@ -101,6 +101,18 @@ class Mt5Service:
 
         return df
     
+    def get_latest_candle_time(self, symbol, timeframe):
+        if not self.connected:
+            print("Not connected to MT5")
+            return None
+        
+        bars = mt5.copy_rates_from_pos(symbol, timeframe, 0, 1)
+        if bars is None or len(bars) == 0:
+            print(f"Failed to get candle data for {symbol}, error code: {mt5.last_error()}")
+            return None
+        
+        return pd.to_datetime(bars[0]['time'], utc=True, unit='s').tz_convert('Asia/Bangkok')
+
     def close_position_by_ticket(self, ticket):
         if not self.connected:
             print("Not connected to MT5")
@@ -131,6 +143,7 @@ class Mt5Service:
         if result is None or result.retcode != mt5.TRADE_RETCODE_DONE:
             print(f"Failed to close position, error code: {mt5.last_error()}")
             return None
+ 
         return result
     
     def close_all_positions(self):
@@ -167,3 +180,38 @@ class Mt5Service:
             if result is None or result.retcode != mt5.TRADE_RETCODE_DONE:
                 print(f"Failed to close position, error code: {mt5.last_error()}")
 
+    def modify_sl_all_positions(self, new_sl):
+        if not self.connected:
+            print("Not connected to MT5")
+            return None
+        
+        positions = mt5.positions_get()
+        if positions is None:
+            print(f"Failed to get open positions, error code: {mt5.last_error()}")
+            return None
+
+        for position in positions:
+            position = position._asdict()
+            symbol = position['symbol']
+            volume = position['volume']
+            ticket = position['ticket']
+            order_type = position['type']
+            price = position['price_open']
+            
+            request = {
+                "action": mt5.TRADE_ACTION_SLTP,
+                "symbol": symbol,
+                "volume": volume,
+                "type": order_type,
+                "position": ticket,
+                "sl": new_sl,
+                "price": price,
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_IOC,
+            }
+
+            result = mt5.order_send(request)
+            if result is None or result.retcode != mt5.TRADE_RETCODE_DONE:
+                print(f"Failed to modify SL for position {ticket}, error code: {mt5.last_error()}")
+            else:
+                print(f"Modified SL for position {ticket} to {new_sl}")

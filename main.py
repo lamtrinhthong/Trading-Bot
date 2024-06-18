@@ -1,6 +1,7 @@
 import json
 import time
 import MetaTrader5 as mt5
+import pandas as pd
 from service.mt5_service import Mt5Service
 from strategies.stochastic_oscillator import Stochastic
 from strategies.moving_average import MovingAverage
@@ -22,6 +23,21 @@ TREND_UP    = "uptrend"
 
 TREND_D1    = TREND_DOWN
 TREND_H4    = TREND_UP
+TREND_H1    = TREND_UP
+TREND_M15   = TREND_UP
+TREND_M5    = TREND_UP
+
+TAKE_PROFIT = 2375
+
+def display_positions(positions):
+    if len(positions) > 0:
+        print("-----------------Open positions---------------------")
+
+        # display these positions
+        df = pd.DataFrame(list(positions), positions[0]._asdict().keys())
+        df['time'] = pd.to_datetime(df['time'], unit='s')
+        df.drop(['time_update', 'time_msc', 'time_update_msc', 'external_id'], axis=1, inplace=True)
+        print(df)
 
 def main():
     # Set up logging
@@ -32,20 +48,35 @@ def main():
     # Load configuration
     with open("C:/Thong/Python/trading_bot/config/config.json") as config_file:
         config = json.load(config_file)
-    
-    service = Mt5Service(config['server'], config['account'], config['password'])
-    strategy = MovingAverage(TREND_H4)
-
-    # Connect to the trading account
-    service.connect()
 
     symbol = "XAUUSDm"
     number_of_candles = 100
     short_window = 10
     volume = 0.1
     time_frame = mt5.TIMEFRAME_H1
+    parent_trend = TREND_H4
+    order_type = mt5.ORDER_TYPE_BUY if parent_trend == TREND_UP else mt5.ORDER_TYPE_SELL
+    
+    service = Mt5Service(config['server'], config['account'], config['password'])
+    strategy = MovingAverage(parent_trend)
 
+    # Connect to the trading account
+    service.connect()
+     
+    latest_candle_time = service.get_latest_candle_time(symbol, time_frame)
     while True:
+        
+        # Detect new candle
+        if latest_candle_time == service.get_latest_candle_time(symbol, time_frame):
+            time.sleep(2)
+            continue
+
+        open_positions = service.get_open_positions
+        display_positions(open_positions)
+
+        # Update new latest candel time
+        latest_candle_time = service.get_latest_candle_time(symbol, time_frame)
+
         # Requesting historical data
         df = service.get_data(symbol, time_frame, number_of_candles)
 
@@ -55,19 +86,15 @@ def main():
         # Define the counter trend
         counter_trend = strategy.get_counter_trend(df)
 
-        # Check the current state is in counter trend or not
-        is_in_counter_trend = strategy.is_current_counter_trend(df)
+        # Place order
+        if df["counter_trend"].iloc[-3] and df["counter_trend"].iloc[-2] != df["counter_trend"].iloc[-3]:
+            sl = strategy.get_sl(counter_trend)
+            tp = TAKE_PROFIT
 
-        if not is_in_counter_trend:
-            print("Not in counter trend, keep waiting!")
-            time.sleep(30)
-            continue
-            
-        print("In counter trend, waiting for finishing the counter trend!")
-        sl = strategy.get_sl(counter_trend)
-        
-        # Wait before the next iteration
-        time.sleep(30)
+            result = service.place_order_market(symbol, order_type, volume, sl, tp)
+            print(f"The new order {result["deal"]} is placed at {result["price"]}")
+
+            service.modify_sl_all_positions(sl)
 
 if __name__ == "__main__":
     main()
