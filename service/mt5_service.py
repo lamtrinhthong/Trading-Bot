@@ -82,8 +82,11 @@ class Mt5Service:
         if positions is None:
             print(f"Failed to get open positions, error code: {mt5.last_error()}")
             return None
-        
-        return [position._asdict() for position in positions]
+            
+        df = pd.DataFrame(positions)[['time', 'ticket', 'profit', 'symbol']]
+        df['time'] = pd.to_datetime(df['time'], utc=True, unit='s').dt.tz_convert('Asia/Bangkok')
+
+        return df
     
     def get_data(self, symbol, timeframe, number_of_candles):
         # Requesting historical data

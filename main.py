@@ -16,7 +16,6 @@ DF_CLOSE        = "close"
 DF_MA           = "ma"
 DF_STO_D        = "%D"
 DF_STO_K        = "%K"
-DF_ORDER_FLAG   = "order_flag"
 
 TREND_DOWN  = "downtrend"
 TREND_UP    = "uptrend"
@@ -30,14 +29,13 @@ TREND_M5    = TREND_UP
 TAKE_PROFIT = 2375
 
 def display_positions(positions):
-    if len(positions) > 0:
-        print("-----------------Open positions---------------------")
+    if len(positions) < 1:
+        print("There is no open position!")
+        return
 
-        # display these positions
-        df = pd.DataFrame(list(positions), positions[0]._asdict().keys())
-        df['time'] = pd.to_datetime(df['time'], unit='s')
-        df.drop(['time_update', 'time_msc', 'time_update_msc', 'external_id'], axis=1, inplace=True)
-        print(df)
+    # display these positions
+    print("-----------------Open positions---------------------")
+    print(positions)
 
 def main():
     # Set up logging
@@ -46,15 +44,15 @@ def main():
     logger.info('Bot started')
 
     # Load configuration
-    with open("C:/Thong/Python/trading_bot/config/config.json") as config_file:
+    with open("C:/thong.lam/python/workspace/trading-bot/config/config.json") as config_file:
         config = json.load(config_file)
 
     symbol = "XAUUSDm"
     number_of_candles = 100
     short_window = 10
     volume = 0.1
-    time_frame = mt5.TIMEFRAME_H1
-    parent_trend = TREND_H4
+    time_frame = mt5.TIMEFRAME_M5
+    parent_trend = TREND_M15
     order_type = mt5.ORDER_TYPE_BUY if parent_trend == TREND_UP else mt5.ORDER_TYPE_SELL
     
     service = Mt5Service(config['server'], config['account'], config['password'])
@@ -71,10 +69,10 @@ def main():
             time.sleep(2)
             continue
 
-        open_positions = service.get_open_positions
+        open_positions = service.get_open_positions()
         display_positions(open_positions)
 
-        # Update new latest candel time
+        # Update new latest candle time
         latest_candle_time = service.get_latest_candle_time(symbol, time_frame)
 
         # Requesting historical data
@@ -92,7 +90,7 @@ def main():
             tp = TAKE_PROFIT
 
             result = service.place_order_market(symbol, order_type, volume, sl, tp)
-            print(f"The new order {result["deal"]} is placed at {result["price"]}")
+            print("The new order is placed")
 
             service.modify_sl_all_positions(sl)
 
