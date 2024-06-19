@@ -16,6 +16,7 @@ DF_CLOSE        = "close"
 DF_MA           = "ma"
 DF_STO_D        = "%D"
 DF_STO_K        = "%K"
+DF_ORDER_FLAG   = "order_flag"
 
 TREND_DOWN  = "downtrend"
 TREND_UP    = "uptrend"
@@ -34,8 +35,22 @@ def display_positions(positions):
         return
 
     # display these positions
-    print("-----------------Open positions---------------------")
-    print(positions)
+    print("-----------------------Open positions-----------------------")
+    # Define columns to print
+    columns = ['Ticket', 'Price Open', 'Stop Loss', 'Take Profit', 'Profit']
+
+    # Print header
+    print("{:<10} {:<12} {:<12} {:<12} {:<10}".format(*columns))
+
+    # Print each row
+    for position in positions:
+        print("{:<10} {:<12} {:<12} {:<12} {:<10}".format(
+            position.ticket, 
+            position.price_open, 
+            position.sl, 
+            position.tp, 
+            position.profit
+        ))
 
 def main():
     # Set up logging
@@ -63,14 +78,14 @@ def main():
      
     latest_candle_time = service.get_latest_candle_time(symbol, time_frame)
     while True:
+
+        open_positions = service.get_open_positions()
+        display_positions(open_positions)
         
         # Detect new candle
         if latest_candle_time == service.get_latest_candle_time(symbol, time_frame):
             time.sleep(2)
             continue
-
-        open_positions = service.get_open_positions()
-        display_positions(open_positions)
 
         # Update new latest candle time
         latest_candle_time = service.get_latest_candle_time(symbol, time_frame)
@@ -89,7 +104,7 @@ def main():
             sl = strategy.get_sl(counter_trend)
             tp = TAKE_PROFIT
 
-            result = service.place_order_market(symbol, order_type, volume, sl, tp)
+            service.place_order_market(symbol, order_type, volume, sl, tp)
             print("The new order is placed")
 
             service.modify_sl_all_positions(sl)
