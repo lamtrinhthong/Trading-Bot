@@ -42,8 +42,8 @@ class MovingAverage:
 
         return is_in_counter_trend
     
-    def get_sl(self, df_counter_trend):
+    def get_sl(self, df_counter_trend, stop_loss_distance):
         if self.parent_trend == 'uptrend':
-            return df_counter_trend['low'].min() - 1 if not df_counter_trend.empty else None
+            return df_counter_trend['low'].min() - stop_loss_distance if not df_counter_trend.empty else None
         elif self.parent_trend == 'downtrend':
-            return df_counter_trend['high'].max() + 1 if not df_counter_trend.empty else None
+            return df_counter_trend['high'].max() + stop_loss_distance if not df_counter_trend.empty else None

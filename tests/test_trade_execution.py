@@ -15,15 +15,15 @@ from mt5_service import Mt5Service
 from moving_average import MovingAverage
 
 # Load configuration
-with open("C:/thong.lam/python/workspace/trading-bot/config/config.json") as config_file:
+with open("C:/Thong/Python/trading_bot/config/config.json", encoding='utf-8') as config_file:
     config = json.load(config_file)
 
-symbol = "XAUUSDm"
+symbol = config['symbol']
 number_of_candles = 100
 short_window = 10
-volume = 0.1
+volume = 0.01
 time_frame = mt5.TIMEFRAME_M5
-parent_trend = "uptrend"
+parent_trend = "downtrend"
 order_type = mt5.ORDER_TYPE_BUY if parent_trend == "uptrend" else mt5.ORDER_TYPE_SELL
     
 service = Mt5Service(config['server'], config['account'], config['password'])
@@ -32,6 +32,6 @@ strategy = MovingAverage(parent_trend)
 # Connect to the trading account
 service.connect()
 
-sl = 2000.0
-tp = 3000.0
+sl = 65300.0
+tp = 64800.0
 service.place_order_market(symbol, order_type, volume, sl, tp)
