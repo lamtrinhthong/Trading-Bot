@@ -27,7 +27,7 @@ TREND_H1    = TREND_UP
 TREND_M15   = TREND_UP
 TREND_M5    = TREND_UP
 
-TAKE_PROFIT = 2375
+TAKE_PROFIT = 2375.0
 
 def display_positions(positions):
     if len(positions) < 1:
@@ -78,7 +78,6 @@ def main():
      
     latest_candle_time = service.get_latest_candle_time(symbol, time_frame)
     while True:
-
         open_positions = service.get_open_positions()
         display_positions(open_positions)
         
