@@ -15,7 +15,7 @@ import json
 import time
 import MetaTrader5 as mt5
 # import pandas as pd
-from service.mt5_service import Mt5Service
+from api.mt5_service import Mt5Service
 # from strategies.stochastic_oscillator import Stochastic
 from strategies.moving_average import MovingAverage
 from utils import logging_utils
