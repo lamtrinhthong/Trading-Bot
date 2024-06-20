@@ -1,7 +1,7 @@
 {
-    "account": 111111111111,
-    "password": "your_password",
-    "server": "account_server",
+    "account": 124880048,
+    "password": "Trinhthong0?",
+    "server": "Exness-MT5Trial7",
     "symbol": "BTCUSDm",
     "timeframe": "M1",
     "number_of_candles" : 100,
