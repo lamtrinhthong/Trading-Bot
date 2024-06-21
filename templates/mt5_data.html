@@ -1,0 +1,20 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MT5 Data</title>
+    <!-- Include Plotly.js from CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>MT5 Candlestick Chart</h1>
+    <div id="candlestick-chart"></div>
+    
+    <!-- Pass data to JavaScript -->
+    <script type="application/json" id="chart-data">{{ data|safe }}</script>
+    
+    <!-- Include the external JavaScript file -->
+    <script src="{% static 'js/plot_candlestick.js' %}"></script>
+</body>
+</html>
